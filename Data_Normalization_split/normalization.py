@@ -27,57 +27,39 @@ for file in files:
             
 print(df)
 # Choice you y for prediction
-economi_project = ['1.brent-daily', '2.dubai-crude', '3.Gold-Price', '4.wti-daily']
-economi_choice = ""
-print(economi_project)
-economi_choice = input("Please select economi project you want to forecasting(Enter a number):")
-# Judge the option selected
-# Your economi_choice should be like "....-....",Insted of ....._.....
-# Because the code behind will report an error
-if economi_choice =="1":
-    print("You choice brent-daily")
-    economi_choice = 'brent-daily'
-elif economi_choice == "2":
-    print("You choice dubai-crude")
-    economi_choice = 'dubai'
-elif economi_choice == "3":
-    print("You choice Gold-Price")
-    economi_choice = 'Gold-Price'
-elif economi_choice == "4":
-    print("You choice wti-daily")
-    economi_choice = 'wti-daily'
-else:
-    print("You set a error code!!")
+economi_project = ['brent-daily', 'dubai-crude', 'Gold-Price', 'wti-daily']
 
-# X is the field other than the economic data you selected
-X = df.drop(f'Price_{economi_choice}', axis=1)
-y = pd.DataFrame(data=df[f'Price_{economi_choice}'], index=df.index, columns=[f'Price_{economi_choice}'])
+# Standardize every Economic Project
+for economic_name in economi_project:
+    # X is the field other than the economic data you selected
+    X = df.drop(f'Price_{economic_name}', axis=1)
+    y = pd.DataFrame(data=df[f'Price_{economic_name}'], index=df.index, columns=[f'Price_{economic_name}'])
 
-# Normalization
-scaler_X = StandardScaler()
-scaler_y = StandardScaler()
+    # Normalization
+    scaler_X = StandardScaler()
+    scaler_y = StandardScaler()
 
-X_scaled = scaler_X.fit_transform(X)
-y_scaled = scaler_y.fit_transform(y)
+    X_scaled = scaler_X.fit_transform(X)
+    y_scaled = scaler_y.fit_transform(y)
 
-# Transform to dataframe
-X_scaled = pd.DataFrame(data=X_scaled, index=X.index, columns=X.columns)
-y_scaled = pd.DataFrame(data=y_scaled, index=y.index, columns=y.columns)
-# Combine the data
-# Save the data to csv  (Our y will all be last column)
-df_scaled = pd.concat([X_scaled, y_scaled], axis=1)
+    # Transform to dataframe
+    X_scaled = pd.DataFrame(data=X_scaled, index=X.index, columns=X.columns)
+    y_scaled = pd.DataFrame(data=y_scaled, index=y.index, columns=y.columns)
+    # Combine the data
+    # Save the data to csv  (Our y will all be last column)
+    df_scaled = pd.concat([X_scaled, y_scaled], axis=1)
 
-# Create a directory
-if not os.path.exists("Data\\Normalization"):
-    os.makedirs("Data\\Normalization")
-else:
-    print("Directory already exists we will not create")
-# Let the index have a name
-df_scaled = df_scaled.rename_axis('Date')
-df_scaled.to_csv("Data\\Normalization\\NormalizationData.csv", header=True)
+    # Create a directory
+    if not os.path.exists("Data\\Normalization"):
+        os.makedirs("Data\\Normalization")
+    else:
+        print("Directory already exists we will not create")
+    # Let the index have a name
+    df_scaled = df_scaled.rename_axis('Date')
+    df_scaled.to_csv(f"Data\\Normalization\\{economic_name}_NormalizationData.csv", header=True)
 
-
-
+# The 0 in the data is because there is a missing position
+# when the missing value was filled in before
     
     
 
