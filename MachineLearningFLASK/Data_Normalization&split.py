@@ -1,0 +1,2 @@
+def Normalization(data):
+    
