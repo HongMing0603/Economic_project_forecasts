@@ -20,6 +20,14 @@ from SplitData import data_split
 sys.path.append('Data_fillna')
 from fillna import FillnaCombine
 
+# import Normalization module
+sys.path.append('Data_Normalization_split')
+from normalization import Normalization_afterSplit, Denormalize
+
+# import Validation_index
+sys.path.append('Validation_index')
+from vd_index import rmse, mape, smape, r2, MAE
+
 
 # Flag for Find_Economic
 find_Economic = False
@@ -39,7 +47,7 @@ for file in files:
 # Number each option(Economic_program)
 NumberList = [(i, Economic) for i, Economic in enumerate(All_file_name, 1)]
 print(NumberList)
-Economic_program = input("Please Enter your choice(Enter a number)")
+Economic_program = input("Please Enter your choice(Enter a number):")
 
 
 for economic_number in NumberList:
@@ -67,10 +75,16 @@ cols.append(cols.pop(cols.index(f'{Economic_program}_Price')))
 df = df.reindex(columns = cols)
 
 X = df.iloc[:, :-1]
-y = df.iloc[:, -1]
+y = df.iloc[:,-1:]
 
 # Split Train and Test
 X_train, X_test, y_train, y_test = data_split(X,y)
+
+# Normalization Dataset
+X_train_scalered = Normalization_afterSplit("X_scaler", X_train, "train")
+X_test_scalered = Normalization_afterSplit("X_scaler", X_test, "test")
+y_train_scalered = Normalization_afterSplit("y_scaler", y_train, "train")
+
 # Create a model
 model = BayesianRidge()
 param_grid = {
@@ -81,18 +95,32 @@ param_grid = {
 }
 # Parameters adjusted
 # The bestmodel here is your model instance that you can use directly to predict
-best_model = run_grid_search(model, param_grid, X_train, y_train)
+best_model = run_grid_search(model, param_grid, X_train_scalered, y_train_scalered)
 
 # Forecasting Values
-y_pred = best_model.predict(X_test)
+y_pred = best_model.predict(X_test_scalered) 
 
 # Get ours predict economi project name
 economi_project_name = df.columns.values[-1]
-economi_project_name = economi_project_name.split('_')[-1]
+economi_project_name = economi_project_name.split('_')[0]
 # Set the y_pred index from y_test.index
 
-# Create a DataFrame for y_pred
-ComparitionTable = pd.DataFrame(data = {'y_test':y_test, f"Predict_the_price_of_{economi_project_name}":y_pred}, index=y_test.index, )
-# inverse Normalization
+# Create a dataFrame for y_pred 
+y_pred = pd.DataFrame(data=y_pred, index=y_test.index, columns=["y_Pred"])
 
-print(ComparitionTable)
+# Denormalize it (y_pred)
+y_pred = Denormalize(y_pred)
+y_pred = pd.DataFrame(data=y_pred, columns=["y_Pred"])
+y_pred.index = y_test.index
+
+print(y_pred.columns)
+combine_df = pd.concat([y_test, y_pred], axis=1)
+combine_df.columns.values[0] = "y_Test"
+combine_df.columns.values[1] = "y_Pred"
+# Calculate the error values
+rmse_value = rmse(combine_df["y_Test"], combine_df["y_Pred"])
+mape_value = mape(combine_df["y_Test"], combine_df["y_Pred"])
+smape_value = smape(combine_df["y_Test"], combine_df["y_Pred"])
+r2_value = r2(combine_df["y_Test"], combine_df["y_Pred"])
+MAE_value = MAE(combine_df["y_Test"], combine_df["y_Pred"])
+

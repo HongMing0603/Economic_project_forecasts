@@ -1,12 +1,53 @@
 import pandas as pd
 import glob
 import os
+import sys
 
 from sklearn.preprocessing import StandardScaler
 
 """
 Process and standardize data filled with missing values
 """
+
+X_scaler = StandardScaler()
+y_scaler = StandardScaler()
+def Normalization_afterSplit(scaler, data, data_type):
+    """
+    Arg:
+        scaler: base on you profile choice the scaler (Enter "X_scaler" or "y_scaler")
+        after you split data to X_train X_test
+        you can use this module to Normalization data
+        data_type: Judgement train data or test data(Enter "train" or "test")
+    output : input's Normalization data (X_train_scalered, X_test_scalered)
+    
+    """
+    # Judgement scaler and data_type
+    if scaler == "X_scaler" and data_type == "train":
+        X_train_scalered = X_scaler.fit_transform(data)
+        return X_train_scalered
+    elif scaler =="X_scaler" and data_type == "test":
+        X_test_scalered = X_scaler.transform(data)
+        return X_test_scalered
+    elif scaler =="y_scaler" and data_type == "train":
+        y_train_scalered = y_scaler.fit_transform(data)
+        return y_train_scalered
+    else:
+        print("Please check the input parameter incorrectly")
+        sys.exit()
+    
+
+    return X_train_scalered, X_test_scalered
+
+def Denormalize(y_pred):
+    """
+    For y_pred to Denormalize
+    Arg:
+        y_pred:y_pred dataFrame
+    """
+    y_pred = y_scaler.inverse_transform(y_pred)
+    return y_pred
+    
+
 def Normalization():
     # Step -> combine data and Normalization then train and prediction data
     economic_column = ["Price", "Open", "High", "Low"]
