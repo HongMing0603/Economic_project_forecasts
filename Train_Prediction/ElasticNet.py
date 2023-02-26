@@ -128,8 +128,3 @@ combine_df.columns.values[1] = "y_Pred"
 # Calculate the error values
 Each_error_value(model_name, combine_df["y_Test"], combine_df["y_Pred"])
 
-rmse_value = rmse(combine_df["y_Test"], combine_df["y_Pred"])
-mape_value = mape(combine_df["y_Test"], combine_df["y_Pred"])
-smape_value = smape(combine_df["y_Test"], combine_df["y_Pred"])
-r2_value = r2(combine_df["y_Test"], combine_df["y_Pred"])
-MAE_value = MAE(combine_df["y_Test"], combine_df["y_Pred"])
