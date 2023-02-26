@@ -118,6 +118,7 @@ combine_df = pd.concat([y_test, y_pred], axis=1)
 combine_df.columns.values[0] = "y_Test"
 combine_df.columns.values[1] = "y_Pred"
 # Calculate the error values
+Each_error_value()
 rmse_value = rmse(combine_df["y_Test"], combine_df["y_Pred"])
 mape_value = mape(combine_df["y_Test"], combine_df["y_Pred"])
 smape_value = smape(combine_df["y_Test"], combine_df["y_Pred"])
