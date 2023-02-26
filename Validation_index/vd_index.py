@@ -66,6 +66,7 @@ def Each_error_value(model_name,y_Test, y_Pred):
     output:Output the values of the various evaluation metrices
     """
     print(metric_names_obj)
+    print(f"Model:{model_name}")
     # Iterate through each metric
     for metric_name in metric_names_obj:
         metric_obj = metric_names_obj[metric_name]
