@@ -27,8 +27,8 @@ def run_grid_search(model, param_grid, X_train, y_train, economic_program, model
         # Display the search time
         
         # Shows how much time the parameter search
-        # took
-        print(f"{model_name}_Model parameter tunning took these times:{best_model.elapsed_time} seconds")
+        # took and show best parameters
+        elapsed_parameters(model_name, best_model)
 
         return best_model
     else:
@@ -43,8 +43,8 @@ def run_grid_search(model, param_grid, X_train, y_train, economic_program, model
         # Write the time record into it as well
         best_model.elapsed_time = elapsed_time
         # Shows how much time the parameter search
-        # took
-        print(f"{model_name}_Model parameter tunning took these times:{best_model.elapsed_time} seconds")
+        # took and show best parameters
+        elapsed_parameters(model_name, best_model)
 
         # Save Best Parameters model
         
@@ -73,3 +73,12 @@ def Determine_model(model_folder, grid_search_model_name):
         return best_model
     else:
         return ""
+
+def elapsed_parameters(model_name, best_model):
+    """
+    Displays the parameter search time and the best parameters
+    """
+    print(f"{model_name}_Model parameter tunning took these times:{best_model.elapsed_time} seconds")
+    # Display the best model and parameters
+    best_parameters = best_model.best_params_
+    print(f"{model_name}'s best parameters are: {best_parameters}")
