@@ -3,6 +3,8 @@ import time
 import joblib
 import sys
 import os
+from pmdarima.arima import auto_arima
+
 
 def run_grid_search(model, param_grid, X_train, y_train, economic_program, model_name):
     """
@@ -83,3 +85,64 @@ def elapsed_parameters(model_name, best_model):
     best_parameters = best_model.best_params_
     print(f"{model_name}'s best parameters are: {best_parameters}")
 
+def elapsed_parameters_arimaSeries(model_name, best_model):
+    """
+    Displays the parameter search time and the best parameters
+    """
+    print(f"{model_name}_Model parameter tunning took these times:{best_model.elapsed_time} seconds")
+    # Display the best model and parameters
+    best_parameters = best_model.order
+    print(f"{model_name}'s best parameters are: {best_parameters}")
+
+def grid_search_arSeries(train_Data, Economic_program, model_name,p=0 , d=0, q=0,):
+    """
+    Arg:
+        p: P The maximum search scope
+        d: d The maximum search scope
+        q: q The maximum search scope
+    """
+    model_folder = "Tune_Parameters/GridSearchModel/"
+    grid_search_model_name = f"{model_name}_GridSearch_{Economic_program}"
+    # Determine whether the model exists
+    best_model = Determine_model(model_folder, grid_search_model_name)
+    if best_model != "":
+        # Already GridSearch
+        # Display the search time
+        
+        # Shows how much time the parameter search
+        # took and show best parameters
+        elapsed_parameters_arimaSeries(model_name, best_model)
+
+        return best_model
+    else:
+        
+        start = time.time()
+        best_order = auto_arima(train_Data, start_p=0, start_q=0,
+                    # The user selects the search scope
+                   max_P=p, max_q=q, d=d,
+                    seasonal=False,
+                   trace=True, error_action="ignore",
+                   suppress_warnings=True, stepwise=True)
+        end = time.time()
+        # Calculate the time it takes
+        elapsed_time = end-start
+ 
+        # Write the time record into it as well
+        best_order.elapsed_time = elapsed_time
+        best_model = best_order
+        # Shows how much time the parameter search
+        elapsed_parameters_arimaSeries(model_name, best_model)
+        # Save Best Parameters model
+        
+        # Judgement the folder exist or not
+        # Assume the folder does not exist
+        if not os.path.exists(model_folder):
+            os.makedirs(model_folder)
+        else:
+            print("The folder already exists, come on!!")
+
+
+        joblib.dump(best_order, model_folder + grid_search_model_name)
+        return best_order
+
+    

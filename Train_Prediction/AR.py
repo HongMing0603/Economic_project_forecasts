@@ -94,7 +94,7 @@ model_name = model_name.split(".")[0]
 # Parameters adjusted
 # The bestmodel here is your model instance that you can use directly to predict
 # Find best lag
-best_order = ar_select_order(Train_Data, maxlag=12, ic="aic")
+best_order = ar_select_order(Train_Data, maxlag=10, ic="aic", )
 # Use best lag parameter
 model = AutoReg(Train_Data, lags=best_order.ar_lags)
 best_model = model.fit()

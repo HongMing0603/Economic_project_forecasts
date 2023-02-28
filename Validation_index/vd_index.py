@@ -10,11 +10,11 @@ def rmse(y_test, y_pred):
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     return rmse
 
-def mape(x1, x2, axis=0):
+def mape(x1, x2):
     x1 = np.asanyarray(x1)
     x2 = np.asanyarray(x2)
 
-    return np.mean(abs((x1-x2)/x1),axis=axis)*100
+    return np.mean(abs((x1-x2)/x1))*100
 
 
 def smape(y_test,y_pred):
