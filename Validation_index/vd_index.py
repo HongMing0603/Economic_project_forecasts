@@ -25,6 +25,7 @@ def smape(y_test,y_pred):
     return 1/len(y_test) * np.sum(2*np.abs(y_pred-y_test)/(np.abs(y_test)+np.abs(y_pred))*100)
 
 def MAE(y_test, y_pred):
+    y_test, y_pred = np.array(y_test), np.array(y_pred)
     mae = np.mean(np.abs(y_test-y_pred))
     return mae
 

@@ -4,15 +4,11 @@ import os
 import sys
 import glob
 
-# Import GridSearch_module
-module_folder = 'Tune_Parameters'
-sys.path.insert(0, module_folder)
-import GridSearch
-from GridSearch import run_grid_search
 
+module_folder = 'Tune_Parameters'
 # Import Train_test_split
 sys.path.append(module_folder)
-from SplitData import data_split
+from SplitData import data_split_AR
 
 # import Fillna combine
 sys.path.append('Data_fillna')
@@ -27,7 +23,7 @@ sys.path.append('Validation_index')
 from vd_index import rmse, mape, smape, r2, MAE, Each_error_value
 
 # import model
-from sklearn.ensemble import RandomForestRegressor
+from statsmodels.tsa.ar_model import AutoReg, ar_select_order
 
 # Flag for Find_Economic
 find_Economic = False
@@ -69,30 +65,23 @@ else:
 # Fillna Combine
 # df are fillna combine data
 df =  FillnaCombine()
-# Let's predict the target in the last position(convenient value selection)
-cols = list(df.columns)
-cols.append(cols.pop(cols.index(f'{Economic_program}_Price')))
-df = df.reindex(columns = cols)
+# AR model are used for univariate prediction
+# So let's take the price of this project as a variable
+# The value of the callback is actually Series...
+df = df.loc[: , f'{Economic_program}_Price']
+# Convert to DataFrame
+df = pd.DataFrame(data=df, index=df.index, columns=[f'{Economic_program}_Price'])
 
-X = df.iloc[:, :-1]
-y = df.iloc[:,-1:]
+print(df.columns)
 
-# Split Train and Test
-X_train, X_test, y_train, y_test = data_split(X,y)
-
-# Normalization Dataset
-X_train_scalered = Normalization_afterSplit("X_scaler", X_train, "train")
-X_test_scalered = Normalization_afterSplit("X_scaler", X_test, "test")
-y_train_scalered = Normalization_afterSplit("y_scaler", y_train, "train")
+# Split Train and Test(Use AR-specific methods)
+# Because there are only Train and Test data
+Train_Data, Test_Data = data_split_AR(df)
+# Normalization Dataset(AR models do not need to be standardized)
 
 # Create a model
-model = RandomForestRegressor()
-
-param_grid = {"n_estimators": [50, 100, 150],
-            "max_depth": [5, 10, 15],
-            "min_samples_split": [2, 5, 10],
-            "min_samples_leaf": [1, 2, 4]
-            }
+model = AutoReg(Train_Data, lags=3)
+param_grid = {'lags': [2, 3, 4, 5]}
 
 
 # Shows how much time the model tooks
@@ -104,29 +93,20 @@ model_name = model_name.split(".")[0]
 
 # Parameters adjusted
 # The bestmodel here is your model instance that you can use directly to predict
-# Pass Economic_name for GridSearch (Economic_program)
-best_model = run_grid_search(model, param_grid, X_train_scalered, y_train_scalered, Economic_program, model_name)
-
+# Find best lag
+best_order = ar_select_order(Train_Data, maxlag=12, ic="aic")
+# Use best lag parameter
+model = AutoReg(Train_Data, lags=best_order.ar_lags)
+best_model = model.fit()
 # Forecasting Values
-y_pred = best_model.predict(X_test_scalered) 
+y_pred = best_model.predict(start=len(Train_Data), end=len(Train_Data) + len(Test_Data)-1)
+# Make the prediction result into a DataFrame
+# Create a dataFrame for y_pred 
+y_pred = pd.DataFrame(data=y_pred, index=y_pred.index, columns=["y_Pred"])
 
 # Get ours predict economi project name
 economi_project_name = df.columns.values[-1]
 economi_project_name = economi_project_name.split('_')[0]
 
-# Create a dataFrame for y_pred 
-y_pred = pd.DataFrame(data=y_pred, index=y_test.index, columns=["y_Pred"])
-
-# Denormalize it (y_pred)
-y_pred = Denormalize(y_pred)
-y_pred = pd.DataFrame(data=y_pred, columns=["y_Pred"])
-y_pred.index = y_test.index
-
-print(y_pred.columns)
-combine_df = pd.concat([y_test, y_pred], axis=1)
-combine_df.columns.values[0] = "y_Test"
-combine_df.columns.values[1] = "y_Pred"
-
-
 # Calculate the error values
-Each_error_value(model_name, combine_df["y_Test"], combine_df["y_Pred"])
+Each_error_value(model_name, Test_Data, y_pred)
