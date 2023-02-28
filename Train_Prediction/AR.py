@@ -23,7 +23,10 @@ sys.path.append('Validation_index')
 from vd_index import rmse, mape, smape, r2, MAE, Each_error_value
 
 # import model
-from statsmodels.tsa.ar_model import AutoReg, ar_select_order
+from statsmodels.tsa.arima.model import ARIMA
+
+# impory gridsearch module 
+from GridSearch import grid_search_arSeries
 
 # Flag for Find_Economic
 find_Economic = False
@@ -79,11 +82,6 @@ print(df.columns)
 Train_Data, Test_Data = data_split_AR(df)
 # Normalization Dataset(AR models do not need to be standardized)
 
-# Create a model
-model = AutoReg(Train_Data, lags=3)
-param_grid = {'lags': [2, 3, 4, 5]}
-
-
 # Shows how much time the model tooks
 # Get the model name using the py file
 model_path = os.path.abspath(__file__)
@@ -94,19 +92,17 @@ model_name = model_name.split(".")[0]
 # Parameters adjusted
 # The bestmodel here is your model instance that you can use directly to predict
 # Find best lag
-best_order = ar_select_order(Train_Data, maxlag=10, ic="aic", )
-# Use best lag parameter
-model = AutoReg(Train_Data, lags=best_order.ar_lags)
-best_model = model.fit()
-# Forecasting Values
-y_pred = best_model.predict(start=len(Train_Data), end=len(Train_Data) + len(Test_Data)-1)
-# Make the prediction result into a DataFrame
-# Create a dataFrame for y_pred 
-y_pred = pd.DataFrame(data=y_pred, index=y_pred.index, columns=["y_Pred"])
+best_model = grid_search_arSeries(Train_Data, Economic_program, model_name, 5, 0, 0,)
 
-# Get ours predict economi project name
-economi_project_name = df.columns.values[-1]
-economi_project_name = economi_project_name.split('_')[0]
+# Use best parameters
+p, d, q = best_model.order
+
+# Use ARIMA model
+model = ARIMA(Train_Data, order=(p, d, q))
+model_fit = model.fit()
+
+# Forecasting Values
+y_pred = model_fit.predict(start=len(Train_Data), end=len(Train_Data) + len(Test_Data)-1)
 
 # Calculate the error values
 Each_error_value(model_name, Test_Data, y_pred)
