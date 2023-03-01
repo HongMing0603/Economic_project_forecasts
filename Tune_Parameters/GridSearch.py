@@ -115,15 +115,26 @@ def grid_search_arSeries(train_Data, Economic_program, model_name,p=0 , d=0, q=0
 
         return best_model
     else:
-        
-        start = time.time()
-        best_order = auto_arima(train_Data, start_p=0, start_q=0,
-                    # The user selects the search scope
-                   max_P=p, max_q=q, d=d,
-                    seasonal=False,
-                   trace=True, error_action="ignore",
-                   suppress_warnings=True, stepwise=True)
-        end = time.time()
+        # Determine if it's ARIMA
+        # not d=0, yes d=d(user setting)
+        if model_name != "ARIMA":
+            start = time.time()
+            best_order = auto_arima(train_Data, start_p=0, start_q=0,
+                        # The user selects the search scope
+                    max_P=p, max_q=q, d=0,
+                        seasonal=False,
+                    trace=True, error_action="ignore",
+                    suppress_warnings=True, stepwise=True)
+            end = time.time()
+        else: # is ARIMA
+            start = time.time()
+            best_order = auto_arima(train_Data, start_p=0, start_q=0,
+                        # The user selects the search scope
+                    max_P=p, max_q=q, max_d=d,
+                        seasonal=False,
+                    trace=True, error_action="ignore",
+                    suppress_warnings=True, stepwise=True)
+            end = time.time()
         # Calculate the time it takes
         elapsed_time = end-start
  
