@@ -49,8 +49,6 @@ df['Date']=pd.to_datetime(df['quote.USD.timestamp']).dt.tz_localize(None)
 df['Low'] = df['quote.USD.low']
 df['High'] = df['quote.USD.high']
 df['Open'] = df['quote.USD.open']
-df['Close'] = df['quote.USD.close']
-df['Volume'] = df['quote.USD.volume']
 # 把名字轉換後，刪除原本數據
 
 # Drop original and redundant columns
@@ -59,7 +57,7 @@ df=df.drop(columns=['time_open','time_close','time_high','time_low', 'quote.USD.
 # 捨去不要的數據
 
 # Creating a new feature for better representing day-wise values
-df['Mean'] = (df['Low'] + df['High'])/2
+df['Price'] = (df['Low'] + df['High'])/2
 
 # Cleaning the data for any NaN or Null fields
 # 除去空值
@@ -67,18 +65,20 @@ df = df.dropna()
 
 # Creating a copy for making small changes
 dataset_for_prediction = df.copy()
-dataset_for_prediction['Actual']=dataset_for_prediction['Mean'].shift()
-#新增一個欄位Actual 是mean的位移 
+
+
 
 dataset_for_prediction=dataset_for_prediction.dropna()
 # 去除預測值的空值
 
 # date time typecast
-dataset_for_prediction['Date'] =pd.to_datetime(dataset_for_prediction['Date'])
-# 把Date時間轉換成時間pandas提供的格式
-dataset_for_prediction.index= dataset_for_prediction['Date']
+dataset_for_prediction = dataset_for_prediction.set_index("Date")
+
 # 把Date設為Time Series index
 print(dataset_for_prediction)
+# Reorder index
+reorder_index = ['Price', 'Open', 'High', 'Low']
+dataset_for_prediction = dataset_for_prediction.reindex(columns=reorder_index)
 
 # 假如沒有data資料夾則創建data資料夾
 if os.path.exists('data'):
@@ -86,5 +86,5 @@ if os.path.exists('data'):
 else:
     os.makedirs('data')
 # 把資料用csv格式輸出
-df.to_csv(f'data/{coin}_data.csv', index=False, mode='w')
+dataset_for_prediction.to_csv(f'data/crypto_downloader/{coin}_data.csv', index=True, mode='w')
 print("寫入成功!!")
