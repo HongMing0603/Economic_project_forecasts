@@ -16,13 +16,35 @@ date = datetime.datetime.now()
 #轉換成時間戳記
 timeStamp = int(date.timestamp())
 print(timeStamp)
+# It is used to determine whether the number entered by the
+# user corresponds to the economic item
+find_Economic = False
 
 # 可供選擇的加密貨幣
 coin_list = ["bitcoin", "ethereum"]
-for i in coin_list:
-    print(i)
+coin_list = [(num, coin ) for num, coin in enumerate(coin_list, 1)]
+
+while True:
+    print(coin_list)
+    coin = input("please enter the currency you want to select(Enter number): ")
+
+    for economic_number in coin_list:
+        # (1,Bitcoin)
+        # If find the Economial_program
+        if economic_number[0] == int(coin):
+            # Give it the name of the economic variable
+            Economic_program = economic_number[1]
+            find_Economic = True
+            break
+    if find_Economic == True:
+        break
+    # Exit the program
+    else:
+        print("The number you entered is not in the list")
+        
+
     
-coin = input("please enter the currency you want to select:")
+
 
 # 判斷是否在list當中
 if coin in coin_list:
@@ -72,8 +94,10 @@ dataset_for_prediction=dataset_for_prediction.dropna()
 # 去除預測值的空值
 
 # date time typecast
-dataset_for_prediction = dataset_for_prediction.set_index("Date")
-
+dataset_for_prediction = dataset_for_prediction.set_index('Date')
+dataset_for_prediction.index = pd.to_datetime(dataset_for_prediction.index, unit='D')
+# Only the part of the date is kept
+dataset_for_prediction.index = dataset_for_prediction.index.date
 # 把Date設為Time Series index
 print(dataset_for_prediction)
 # Reorder index
