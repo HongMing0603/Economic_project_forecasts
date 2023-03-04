@@ -42,16 +42,10 @@ while True:
     else:
         print("The number you entered is not in the list")
         
-
+coin = Economic_program
     
 
 
-# 判斷是否在list當中
-if coin in coin_list:
-    print('正在為您處理資料')
-else:
-    print("輸入字串錯誤請重新輸入")
-    sys.exit()
 # Fetching data from the server
 url = "https://web-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/historical"
 # param = {"convert":"USD","slug":"bitcoin","time_end":"1601510400","time_start":"1367107200"}
@@ -110,5 +104,5 @@ if os.path.exists('data'):
 else:
     os.makedirs('data')
 # 把資料用csv格式輸出
-dataset_for_prediction.to_csv(f'data/crypto_downloader/{coin}_data.csv', index=True, mode='w')
+dataset_for_prediction.to_csv(f'data/crypto_downloader/{coin}_data.csv', index=True, mode='w', index_label="Date")
 print("寫入成功!!")

@@ -11,6 +11,7 @@ module_folder = 'Tune_Parameters'
 sys.path.insert(0, module_folder)
 import GridSearch
 from GridSearch import run_grid_search
+from BayesSearch import BayesSearch
 
 # Import Train_test_split
 sys.path.append(module_folder)
@@ -105,28 +106,49 @@ model_name = model_name.split(".")[0]
 # Parameters adjusted
 # The bestmodel here is your model instance that you can use directly to predict
 # Pass Economic_name for GridSearch (Economic_program)
-best_model = run_grid_search(model, param_grid, X_train_scalered, y_train_scalered, Economic_program, model_name)
+best_model_gridSearch = run_grid_search(model, param_grid, X_train_scalered, y_train_scalered, Economic_program, model_name)
+# Use BayesSearch
+best_model_BayesSearch = BayesSearch(model, param_grid, X_train_scalered, y_train_scalered, Economic_program, model_name)
 
 # Forecasting Values
-y_pred = best_model.predict(X_test_scalered) 
+y_pred_GridSearch = best_model_gridSearch.predict(X_test_scalered) 
+y_pred_BayesSearch = best_model_BayesSearch.predict(X_test_scalered) 
 
 # Get ours predict economi project name
 economi_project_name = df.columns.values[-1]
 economi_project_name = economi_project_name.split('_')[0]
 
 # Create a dataFrame for y_pred 
-y_pred = pd.DataFrame(data=y_pred, index=y_test.index, columns=["y_Pred"])
-
+y_pred_GridSearch = pd.DataFrame(data=y_pred_GridSearch, index=y_test.index, columns=["y_Pred"])
+y_pred_BayesSearch = pd.DataFrame(data=y_pred_BayesSearch, index=y_test.index,columns=["y_Pred"])
 # Denormalize it (y_pred)
-y_pred = Denormalize(y_pred)
-y_pred = pd.DataFrame(data=y_pred, columns=["y_Pred"])
-y_pred.index = y_test.index
+y_pred_GridSearch = Denormalize(y_pred_GridSearch)
+y_pred_BayesSearch = Denormalize(y_pred_BayesSearch)
 
-print(y_pred.columns)
-combine_df = pd.concat([y_test, y_pred], axis=1)
-combine_df.columns.values[0] = "y_Test"
-combine_df.columns.values[1] = "y_Pred"
+y_pred_GridSearch = pd.DataFrame(data=y_pred_GridSearch, columns=["y_Pred"])
+y_pred_BayesSearch = pd.DataFrame(data=y_pred_BayesSearch, columns=["y_Pred"])
+
+y_pred_GridSearch.index = y_test.index
+y_pred_BayesSearch.index = y_test.index
+
+# For Grid Search dataFrame combine
+print(y_pred_GridSearch.columns)
+combine_df_GridSearch = pd.concat([y_test, y_pred_GridSearch], axis=1)
+combine_df_GridSearch.columns.values[0] = "y_Test"
+combine_df_GridSearch.columns.values[1] = "y_Pred"
+
+# For BayesSearch DataFrame combine
+print(y_pred_BayesSearch.columns)
+combine_df_BayesSearch = pd.concat([y_test, y_pred_BayesSearch], axis=1)
+combine_df_BayesSearch.columns.values[0] = "y_Test"
+combine_df_BayesSearch.columns.values[1] = "y_Pred"
 
 
 # Calculate the error values
-Each_error_value(model_name, combine_df["y_Test"], combine_df["y_Pred"])
+# For Grid Search
+print("Grid Search Validation_index:")
+Each_error_value(model_name, combine_df_GridSearch["y_Test"], combine_df_GridSearch["y_Pred"])
+
+# For BayesSearch
+print("Bayes Search Validation_index:")
+Each_error_value(model_name, combine_df_BayesSearch["y_Test"], combine_df_BayesSearch["y_Pred"])

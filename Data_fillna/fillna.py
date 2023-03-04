@@ -29,7 +29,6 @@ def fillna():
 
         # Create a DataFrame
         imputed_df = pd.DataFrame(imputed_data, columns=df.columns, index=df.index)
-        print(imputed_df)
 
         directory_name = "Data/fillna"
 
@@ -77,3 +76,6 @@ def FillnaCombine():
     df.to_csv('Data\\fillna\\Combine\\fillna_Combine.csv', index=True)
     # Return the dataFrame
     return df
+
+if __name__ == "__main__":
+    fillna()
